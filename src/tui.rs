@@ -19,7 +19,7 @@ use ratatui::{
 
 #[derive(Debug)]
 pub struct App {
-    platform: String,
+    platform: setters::Platform,
     wallpapers: Wallpapers,
     should_exit: bool,
 }
@@ -76,7 +76,7 @@ impl Widget for &mut App {
 }
 
 impl App {
-    pub fn new(wallpaper_dir: &str, platform: &str) -> Self {
+    pub fn new(wallpaper_dir: &str, platform: setters::Platform) -> Self {
         let images: Vec<Wallpaper> = setters::read_wallpapers(wallpaper_dir)
             .unwrap()
             .iter()
@@ -87,7 +87,7 @@ impl App {
         let wallpapers = Wallpapers::new(images);
 
         Self {
-            platform: platform.to_string(),
+            platform,
             wallpapers,
             should_exit,
         }
@@ -125,7 +125,7 @@ impl App {
             .wallpapers
             .items
             .iter()
-            .map(|w| ListItem::from(format!("{}", w.name)))
+            .map(|w| ListItem::from(w.name.to_string()))
             .collect();
 
         let list = List::new(items)
@@ -179,7 +179,7 @@ impl App {
 
     fn set_wallpaper(&mut self) {
         if let Some(i) = self.wallpapers.state.selected() {
-            setters::set_wallpaper(&self.wallpapers.items[i].path, self.platform.as_str());
+            setters::set_wallpaper(&self.wallpapers.items[i].path, self.platform);
         }
     }
 
