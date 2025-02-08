@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::compositor;
+use crate::setters;
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use rand::{thread_rng, Rng};
@@ -19,6 +19,7 @@ use ratatui::{
 
 #[derive(Debug)]
 pub struct App {
+    platform: String,
     wallpapers: Wallpapers,
     should_exit: bool,
 }
@@ -75,8 +76,8 @@ impl Widget for &mut App {
 }
 
 impl App {
-    pub fn new(wallpaper_dir: String) -> Self {
-        let images: Vec<Wallpaper> = compositor::read_wallpapers(wallpaper_dir)
+    pub fn new(wallpaper_dir: &str, platform: &str) -> Self {
+        let images: Vec<Wallpaper> = setters::read_wallpapers(wallpaper_dir)
             .unwrap()
             .iter()
             .map(|path| Wallpaper::new(path.clone()))
@@ -86,6 +87,7 @@ impl App {
         let wallpapers = Wallpapers::new(images);
 
         Self {
+            platform: platform.to_string(),
             wallpapers,
             should_exit,
         }
@@ -177,7 +179,7 @@ impl App {
 
     fn set_wallpaper(&mut self) {
         if let Some(i) = self.wallpapers.state.selected() {
-            compositor::set_wallpaper(&self.wallpapers.items[i].path, "feh");
+            setters::set_wallpaper(&self.wallpapers.items[i].path, self.platform.as_str());
         }
     }
 
