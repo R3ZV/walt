@@ -1,6 +1,7 @@
 use std::fs;
 use std::io;
 use std::process;
+use std::process::ExitStatus;
 
 use rand::thread_rng;
 use rand::Rng;
@@ -27,24 +28,20 @@ pub fn set_random_wallpaper(dir: &str, platform: Platform) -> Result<(), io::Err
     let wallpapers = read_wallpapers(dir)?;
     let mut rng = thread_rng();
     let idx: usize = rng.gen_range(0..wallpapers.len());
-    set_wallpaper(&wallpapers[idx], platform);
+    set_wallpaper(&wallpapers[idx], platform)?;
 
     Ok(())
 }
 
-pub fn set_wallpaper(wallpaper_path: &str, platform: Platform) {
+pub fn set_wallpaper(wallpaper_path: &str, platform: Platform) -> io::Result<ExitStatus> {
     match platform {
-        Platform::Wayland => {
-            process::Command::new("swww")
-                .args(["img", wallpaper_path, "--transition-step", "10"])
-                .spawn()
-                .expect("failed to set the new wallpaper");
-        }
-        Platform::X11 => {
-            process::Command::new("feh")
-                .args(["--bg-scale", wallpaper_path])
-                .spawn()
-                .expect("failed to set the new wallpaper");
-        }
+        Platform::Wayland => process::Command::new("swww")
+            .args(["img", wallpaper_path, "--transition-step", "10"])
+            .spawn()?
+            .wait(),
+        Platform::X11 => process::Command::new("feh")
+            .args(["--bg-scale", wallpaper_path])
+            .spawn()?
+            .wait(),
     }
 }

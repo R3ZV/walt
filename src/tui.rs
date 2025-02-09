@@ -76,9 +76,8 @@ impl Widget for &mut App {
 }
 
 impl App {
-    pub fn new(wallpaper_dir: &str, platform: setters::Platform) -> Self {
-        let images: Vec<Wallpaper> = setters::read_wallpapers(wallpaper_dir)
-            .unwrap()
+    pub fn new(wallpaper_dir: &str, platform: setters::Platform) -> io::Result<Self> {
+        let images: Vec<Wallpaper> = setters::read_wallpapers(wallpaper_dir)?
             .iter()
             .map(|path| Wallpaper::new(path.clone()))
             .collect();
@@ -86,11 +85,11 @@ impl App {
         let should_exit = false;
         let wallpapers = Wallpapers::new(images);
 
-        Self {
+        Ok(Self {
             platform,
             wallpapers,
             should_exit,
-        }
+        })
     }
 
     pub fn run(mut self, mut terminal: DefaultTerminal) -> io::Result<()> {
@@ -179,7 +178,7 @@ impl App {
 
     fn set_wallpaper(&mut self) {
         if let Some(i) = self.wallpapers.state.selected() {
-            setters::set_wallpaper(&self.wallpapers.items[i].path, self.platform);
+            let _ = setters::set_wallpaper(&self.wallpapers.items[i].path, self.platform);
         }
     }
 
